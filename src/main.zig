@@ -6,7 +6,25 @@ const vec3 = @import("vec3.zig");
 const stdout = std.io.getStdOut().writer();
 const stderr = std.io.getStdErr().writer();
 
+pub fn hit_sphere(center: vec3.Point3, radius: f32, r: ray.Ray) f32 {
+    const oc: vec3.Vec3 = center.sub(r.origin);
+    const a = r.direction.dot(r.direction);
+    const b = r.direction.dot(oc) * -2.0;
+    const c = oc.dot(oc) - radius * radius;
+    const discriminant = b * b - 4 * a * c;
+    if (discriminant < 0) {
+        return -1.0;
+    } else {
+        return (-b - @sqrt(discriminant)) / (2.0 * a);
+    }
+}
+
 pub fn ray_color(r: ray.Ray) color.Color {
+    const t = hit_sphere(vec3.Point3.init(0, 0, -1), 0.5, r);
+    if (t > 0.0) {
+        const N = r.at(t).sub(vec3.Vec3.init(0, 0, -1)).unit_vector();
+        return color.Color.init(N.x() + 1, N.y() + 1, N.z() + 1).scalar_mul(0.5);
+    }
     const unit_direction = r.direction.unit_vector();
     const a = (unit_direction.y() + 1.0) * 0.5;
     const start = color.Color.init(1.0, 1.0, 1.0).scalar_mul(1.0 - a);
