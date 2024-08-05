@@ -1,5 +1,9 @@
 pub const Vec3 = struct {
-    e: [3]f32,
+    const Self = @This();
+
+    x: f32,
+    y: f32,
+    z: f32,
 
     pub fn init(e1: f32, e2: f32, e3: f32) Vec3 {
         const e: [3]f32 = .{ e1, e2, e3 };

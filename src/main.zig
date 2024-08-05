@@ -15,9 +15,9 @@ pub fn main() !void {
         for (0..image_width) |i| {
             const r: f32 = @as(f32, @floatFromInt(i)) / @as(f32, @floatFromInt(image_width - 1));
             const g: f32 = @as(f32, @floatFromInt(j)) / @as(f32, @floatFromInt(image_height - 1));
-            const b: f32 = 0.25;
+            const b: f32 = 0.0;
             const pixel_color = color.Color.init(r, g, b);
-            color.write_color(stdout, pixel_color);
+            try color.write_color(stdout, pixel_color);
         }
     }
 

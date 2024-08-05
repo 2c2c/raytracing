@@ -3,7 +3,7 @@ const vec3 = @import("vec3.zig");
 
 pub const Color = vec3.Vec3;
 
-pub fn write_color(out: std.fs.File.Writer, pixel_color: const Color) void {
+pub fn write_color(out: std.fs.File.Writer, pixel_color: Color) !void {
     const r = pixel_color.x();
     const g = pixel_color.y();
     const b = pixel_color.z();
@@ -13,5 +13,5 @@ pub fn write_color(out: std.fs.File.Writer, pixel_color: const Color) void {
     const ig: u8 = @intFromFloat(255.999 * g);
     const ib: u8 = @intFromFloat(255.999 * b);
 
-    out.print("{d} {d} {d}\n", .{ ir, ig, ib });
+    try out.print("{d} {d} {d}\n", .{ ir, ig, ib });
 }
