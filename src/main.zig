@@ -2,34 +2,26 @@ const std = @import("std");
 const color = @import("color.zig");
 const ray = @import("ray.zig");
 const vec3 = @import("vec3.zig");
+const hittable = @import("hittable.zig");
+const hittable_list = @import("hittable_list.zig");
+const sphere = @import("sphere.zig");
 
 const stdout = std.io.getStdOut().writer();
 const stderr = std.io.getStdErr().writer();
 
-pub fn hit_sphere(center: vec3.Point3, radius: f32, r: ray.Ray) f32 {
-    const oc: vec3.Vec3 = center.sub(r.origin);
-    const a = r.direction.dot(r.direction);
-    const b = r.direction.dot(oc) * -2.0;
-    const c = oc.dot(oc) - radius * radius;
-    const discriminant = b * b - 4 * a * c;
-    if (discriminant < 0) {
-        return -1.0;
-    } else {
-        return (-b - @sqrt(discriminant)) / (2.0 * a);
+pub fn ray_color(r: *ray.Ray, world: *hittable.Hittable) color.Color {
+    var rec: hittable.HitRecord = undefined;
+    if (world.hit(r, 0, std.math.inf(f32), &rec)) {
+        return rec.normal.add(color.Color.init(1, 1, 1)).scalar_mul(0.5);
     }
-}
 
-pub fn ray_color(r: ray.Ray) color.Color {
-    const t = hit_sphere(vec3.Point3.init(0, 0, -1), 0.5, r);
-    if (t > 0.0) {
-        const N = r.at(t).sub(vec3.Vec3.init(0, 0, -1)).unit_vector();
-        return color.Color.init(N.x() + 1, N.y() + 1, N.z() + 1).scalar_mul(0.5);
-    }
     const unit_direction = r.direction.unit_vector();
-    const a = (unit_direction.y() + 1.0) * 0.5;
-    const start = color.Color.init(1.0, 1.0, 1.0).scalar_mul(1.0 - a);
-    const end = color.Color.init(0.5, 0.7, 1.0).scalar_mul(a);
-    return start.add(end);
+    const a = 0.5 * (unit_direction.y() + 1.0);
+
+    const left = color.Color.init(1, 1, 1).scalar_mul(1.0 - a);
+    const right = color.Color.init(0.5, 0.7, 1.0).scalar_mul(a);
+
+    return left.add(right);
 }
 
 pub fn main() !void {
@@ -39,6 +31,32 @@ pub fn main() !void {
     // var img_height: f32 = @intFromFloat(@as(f32, @floatFromInt(img_width)) / aspect_ratio);
     var img_height: u32 = @intFromFloat(@as(f32, @floatFromInt(img_width)) / aspect_ratio);
     img_height = if (img_height < 1) 1 else img_height;
+
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    const alloc = gpa.allocator();
+
+    var w = hittable_list.HittableList.empty(alloc);
+    var world = w._hittable();
+
+    var sphere1 = try alloc.create(sphere.Sphere);
+    defer alloc.destroy(sphere1);
+
+    sphere1.* = sphere.Sphere{
+        .center = vec3.Point3.init(0, 0, -1),
+        .radius = 0.5,
+    };
+    var s1 = sphere1._hittable();
+
+    var sphere2 = try alloc.create(sphere.Sphere);
+    defer alloc.destroy(sphere2);
+
+    sphere2.* = sphere.Sphere{
+        .center = vec3.Point3.init(0, -100.5, -1),
+        .radius = 100,
+    };
+    var s2 = sphere2._hittable();
+    try w.add(&s1);
+    try w.add(&s2);
 
     const focal_length = 1.0;
     const viewport_height = 2.0;
@@ -60,9 +78,9 @@ pub fn main() !void {
         for (0..img_width) |i| {
             const pixel_center = pixel_00_loc.add(pixel_delta_u.scalar_mul(@floatFromInt(i))).add(pixel_delta_v.scalar_mul(@floatFromInt(j)));
             const ray_direction = pixel_center.sub(camera_center);
-            const r = ray.Ray.init(camera_center, ray_direction);
+            var r = ray.Ray.init(camera_center, ray_direction);
 
-            const pixel_color = ray_color(r);
+            const pixel_color = ray_color(&r, &world);
             try color.write_color(stdout, pixel_color);
         }
     }
