@@ -16,6 +16,7 @@ pub const Camera = struct {
     img_width: u32 = 100,
     samples_per_pixel: u32 = 10,
     pixel_samples_scale: f32 = 1.0,
+    max_depth: u32 = 10,
 
     img_height: u32 = undefined,
     center: vec3.Point3 = undefined,
@@ -34,7 +35,7 @@ pub const Camera = struct {
                 for (0..self.samples_per_pixel) |s| {
                     _ = s; // autofix
                     const r = self.get_ray(@intCast(i), @intCast(j));
-                    pixel_color = pixel_color.add(ray_color(&r, world));
+                    pixel_color = pixel_color.add(ray_color(&r, self.max_depth, world));
                 }
                 try color.write_color(stdout, pixel_color.scalar_mul(self.pixel_samples_scale));
             }
@@ -65,10 +66,15 @@ pub const Camera = struct {
         self.pixel_00_loc = viewport_upper_left.add(self.pixel_delta_u.add(self.pixel_delta_v).scalar_mul(0.5));
     }
 
-    fn ray_color(r: *const ray.Ray, world: *const hittable.Hittable) color.Color {
+    fn ray_color(r: *const ray.Ray, depth: u32, world: *const hittable.Hittable) color.Color {
+        if (depth <= 0) {
+            return color.Color.init(0, 0, 0);
+        }
+
         var rec: hittable.HitRecord = undefined;
-        if (world.hit(r, interval.Interval.init(0, std.math.inf(f32)), &rec)) {
-            return rec.normal.add(color.Color.init(1, 1, 1)).scalar_mul(0.5);
+        if (world.hit(r, interval.Interval.init(0.001, std.math.inf(f32)), &rec)) {
+            const direction = rec.normal.add(vec3.Vec3.random_unit_vector());
+            return ray_color(&ray.Ray.init(rec.p, direction), depth - 1, world).scalar_mul(0.5);
         }
 
         const unit_direction = r.direction.unit_vector();
