@@ -19,7 +19,7 @@ pub const Sphere = struct {
         };
     }
 
-    pub fn hit(ctx: *anyopaque, r: *ray.Ray, ray_t: interval.Interval, rec: *hittable.HitRecord) bool {
+    pub fn hit(ctx: *anyopaque, r: *const ray.Ray, ray_t: interval.Interval, rec: *hittable.HitRecord) bool {
         const self: *Sphere = @alignCast(@ptrCast(ctx));
 
         const oc = self.center.sub(r.origin);

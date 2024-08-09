@@ -35,7 +35,7 @@ pub const HittableList = struct {
         try self.objects.append(object);
     }
 
-    pub fn hit(ctx: *anyopaque, r: *ray.Ray, ray_t: interval.Interval, rec: *hittable.HitRecord) bool {
+    pub fn hit(ctx: *anyopaque, r: *const ray.Ray, ray_t: interval.Interval, rec: *hittable.HitRecord) bool {
         const self: *HittableList = @alignCast(@ptrCast(ctx));
 
         var temp_rec: hittable.HitRecord = undefined;

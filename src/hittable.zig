@@ -20,10 +20,10 @@ pub const Hittable = struct {
     vtable: *const VTable,
 
     pub const VTable = struct {
-        hit: *const fn (ctx: *anyopaque, r: *ray.Ray, ray_t: interval.Interval, rec: *HitRecord) bool,
+        hit: *const fn (ctx: *anyopaque, r: *const ray.Ray, ray_t: interval.Interval, rec: *HitRecord) bool,
     };
 
-    pub fn hit(hittable: Hittable, r: *ray.Ray, ray_t: interval.Interval, rec: *HitRecord) bool {
+    pub fn hit(hittable: Hittable, r: *const ray.Ray, ray_t: interval.Interval, rec: *HitRecord) bool {
         return hittable.vtable.hit(hittable.ctx, r, ray_t, rec);
     }
 };
