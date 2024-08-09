@@ -8,10 +8,14 @@ const vec3 = @import("vec3.zig");
 
 const stdout = std.io.getStdOut().writer();
 const stderr = std.io.getStdErr().writer();
+var xoshiro = std.rand.DefaultPrng.init(0);
+const random = xoshiro.random();
 
 pub const Camera = struct {
     aspect_ratio: f32 = 1.0,
     img_width: u32 = 100,
+    samples_per_pixel: u32 = 10,
+    pixel_samples_scale: f32 = 1.0,
 
     img_height: u32 = undefined,
     center: vec3.Point3 = undefined,
@@ -26,12 +30,13 @@ pub const Camera = struct {
         for (0..self.img_height) |j| {
             try stderr.print("Scanlines remaining {}\n", .{self.img_height - j});
             for (0..self.img_width) |i| {
-                const pixel_center = self.pixel_00_loc.add(self.pixel_delta_u.scalar_mul(@floatFromInt(i))).add(self.pixel_delta_v.scalar_mul(@floatFromInt(j)));
-                const ray_direction = pixel_center.sub(self.center);
-                var r = ray.Ray.init(self.center, ray_direction);
-
-                const pixel_color = ray_color(&r, world);
-                try color.write_color(stdout, pixel_color);
+                var pixel_color = color.Color.init(0, 0, 0);
+                for (0..self.samples_per_pixel) |s| {
+                    _ = s; // autofix
+                    const r = self.get_ray(@intCast(i), @intCast(j));
+                    pixel_color = pixel_color.add(ray_color(&r, world));
+                }
+                try color.write_color(stdout, pixel_color.scalar_mul(self.pixel_samples_scale));
             }
         }
 
@@ -41,6 +46,8 @@ pub const Camera = struct {
     fn init(self: *Camera) void {
         self.img_height = @intFromFloat(@as(f32, @floatFromInt(self.img_width)) / self.aspect_ratio);
         self.img_height = if (self.img_height < 1) 1 else self.img_height;
+
+        self.pixel_samples_scale = 1.0 / @as(f32, @floatFromInt(self.samples_per_pixel));
 
         self.center = vec3.Point3.init(0, 0, 0);
 
@@ -71,5 +78,24 @@ pub const Camera = struct {
         const right = color.Color.init(0.5, 0.7, 1.0).scalar_mul(a);
 
         return left.add(right);
+    }
+
+    fn get_ray(self: *const Camera, i: u32, j: u32) ray.Ray {
+        const offset = sample_square();
+
+        const ii = self.pixel_delta_u.scalar_mul((@as(f32, @floatFromInt(i)) + offset.x()));
+        const jj = self.pixel_delta_v.scalar_mul((@as(f32, @floatFromInt(j)) + offset.y()));
+        const pixel_sample = self.pixel_00_loc.add(ii).add(jj);
+
+        const ray_origin = self.center;
+        const ray_direction = pixel_sample.sub(ray_origin);
+
+        return ray.Ray.init(ray_origin, ray_direction);
+    }
+
+    fn sample_square() vec3.Vec3 {
+        const rand1 = random.float(f32);
+        const rand2 = random.float(f32);
+        return vec3.Vec3.init(rand1 - 0.5, rand2 - 0.5, 0);
     }
 };

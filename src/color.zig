@@ -1,5 +1,6 @@
 const std = @import("std");
 const vec3 = @import("vec3.zig");
+const interval = @import("interval.zig");
 
 pub const Color = vec3.Vec3;
 
@@ -8,10 +9,10 @@ pub fn write_color(out: std.fs.File.Writer, pixel_color: Color) !void {
     const g = pixel_color.y();
     const b = pixel_color.z();
 
-    // Write the translated [0,255] value of each color component.
-    const ir: u8 = @intFromFloat(255.999 * r);
-    const ig: u8 = @intFromFloat(255.999 * g);
-    const ib: u8 = @intFromFloat(255.999 * b);
+    const intensity = interval.Interval.init(0.000, 0.999);
+    const ir: u8 = @intFromFloat(256 * intensity.clamp(r));
+    const ig: u8 = @intFromFloat(256 * intensity.clamp(g));
+    const ib: u8 = @intFromFloat(256 * intensity.clamp(b));
 
     try out.print("{d} {d} {d}\n", .{ ir, ig, ib });
 }

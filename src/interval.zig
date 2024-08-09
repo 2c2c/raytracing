@@ -27,6 +27,15 @@ pub const Interval = struct {
     pub fn surrounds(self: *const Interval, x: f32) bool {
         return x > self.min and x < self.max;
     }
+    pub fn clamp(self: *const Interval, x: f32) f32 {
+        if (x < self.min) {
+            return self.min;
+        }
+        if (x > self.max) {
+            return self.max;
+        }
+        return x;
+    }
 };
 
 pub const empty = Interval.empty();
