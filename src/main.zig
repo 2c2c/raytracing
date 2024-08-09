@@ -5,13 +5,14 @@ const vec3 = @import("vec3.zig");
 const hittable = @import("hittable.zig");
 const hittable_list = @import("hittable_list.zig");
 const sphere = @import("sphere.zig");
+const interval = @import("interval.zig");
 
 const stdout = std.io.getStdOut().writer();
 const stderr = std.io.getStdErr().writer();
 
 pub fn ray_color(r: *ray.Ray, world: *hittable.Hittable) color.Color {
     var rec: hittable.HitRecord = undefined;
-    if (world.hit(r, 0, std.math.inf(f32), &rec)) {
+    if (world.hit(r, interval.Interval.init(0, std.math.inf(f32)), &rec)) {
         return rec.normal.add(color.Color.init(1, 1, 1)).scalar_mul(0.5);
     }
 

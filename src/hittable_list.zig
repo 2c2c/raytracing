@@ -1,6 +1,7 @@
 const std = @import("std");
 const hittable = @import("hittable.zig");
 const ray = @import("ray.zig");
+const interval = @import("interval.zig");
 
 pub const HittableList = struct {
     objects: std.ArrayList(*hittable.Hittable),
@@ -34,15 +35,15 @@ pub const HittableList = struct {
         try self.objects.append(object);
     }
 
-    pub fn hit(ctx: *anyopaque, r: *ray.Ray, ray_tmin: f32, ray_tmax: f32, rec: *hittable.HitRecord) bool {
+    pub fn hit(ctx: *anyopaque, r: *ray.Ray, ray_t: interval.Interval, rec: *hittable.HitRecord) bool {
         const self: *HittableList = @alignCast(@ptrCast(ctx));
 
         var temp_rec: hittable.HitRecord = undefined;
         var hit_anything = false;
-        var closest_so_far = ray_tmax;
+        var closest_so_far = ray_t.max;
 
         for (self.objects.items) |object| {
-            if (object.hit(r, ray_tmin, closest_so_far, &temp_rec)) {
+            if (object.hit(r, interval.Interval.init(ray_t.min, closest_so_far), &temp_rec)) {
                 hit_anything = true;
                 closest_so_far = temp_rec.t;
                 rec.* = temp_rec;

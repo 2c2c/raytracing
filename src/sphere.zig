@@ -2,6 +2,7 @@ const std = @import("std");
 const vec3 = @import("vec3.zig");
 const ray = @import("ray.zig");
 const hittable = @import("hittable.zig");
+const interval = @import("interval.zig");
 
 pub const Sphere = struct {
     center: vec3.Point3,
@@ -18,7 +19,7 @@ pub const Sphere = struct {
         };
     }
 
-    pub fn hit(ctx: *anyopaque, r: *ray.Ray, ray_tmin: f32, ray_tmax: f32, rec: *hittable.HitRecord) bool {
+    pub fn hit(ctx: *anyopaque, r: *ray.Ray, ray_t: interval.Interval, rec: *hittable.HitRecord) bool {
         const self: *Sphere = @alignCast(@ptrCast(ctx));
 
         const oc = self.center.sub(r.origin);
@@ -34,9 +35,9 @@ pub const Sphere = struct {
         const sqrtd = @sqrt(discriminant);
 
         var root = (h - sqrtd) / a;
-        if (root <= ray_tmin or ray_tmax <= root) {
+        if (!ray_t.surrounds(root)) {
             root = (h + sqrtd) / a;
-            if (root <= ray_tmin or ray_tmax <= root) {
+            if (!ray_t.surrounds(root)) {
                 return false;
             }
         }
