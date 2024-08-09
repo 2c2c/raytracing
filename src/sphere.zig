@@ -3,12 +3,14 @@ const vec3 = @import("vec3.zig");
 const ray = @import("ray.zig");
 const hittable = @import("hittable.zig");
 const interval = @import("interval.zig");
+const material = @import("material.zig");
 
 pub const Sphere = struct {
     center: vec3.Point3,
     radius: f32,
+    mat: material.Material,
 
-    pub const vtable = hittable.Hittable.VTable{
+    const vtable = hittable.Hittable.VTable{
         .hit = &hit,
     };
 
@@ -16,6 +18,14 @@ pub const Sphere = struct {
         return .{
             .ctx = @ptrCast(sphere),
             .vtable = &vtable,
+        };
+    }
+
+    pub fn init(center: vec3.Point3, radius: f32, mat: material.Material) Sphere {
+        return .{
+            .center = center,
+            .radius = radius,
+            .mat = mat,
         };
     }
 
@@ -46,6 +56,9 @@ pub const Sphere = struct {
         rec.p = r.at(rec.t);
         const outward_normal = rec.p.sub(self.center).scalar_div(self.radius);
         rec.set_face_normal(r.*, outward_normal);
+        // set mat?
+        // might not be necessary
+        rec.mat = self.mat;
 
         return true;
     }

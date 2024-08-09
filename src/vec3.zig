@@ -151,6 +151,10 @@ pub const Vec3 = struct {
         return on_unit_sphere.neg();
     }
 
+    pub fn reflect(v: Vec3, norm: Vec3) Vec3 {
+        return v.sub(norm.scalar_mul(2 * v.dot(norm)));
+    }
+
     pub fn rand() Vec3 {
         const rand1 = random.float(f32);
         const rand2 = random.float(f32);
@@ -165,6 +169,11 @@ pub const Vec3 = struct {
         const rand3 = min + random.float(f32) * (max - min);
 
         return Vec3.init(rand1, rand2, rand3);
+    }
+
+    pub fn near_zero(self: *const Vec3) bool {
+        const s = 1e-8;
+        return @abs(self.e[0]) < s and @abs(self.e[1]) < s and @abs(self.e[2]) < s;
     }
 };
 

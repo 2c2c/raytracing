@@ -73,8 +73,13 @@ pub const Camera = struct {
 
         var rec: hittable.HitRecord = undefined;
         if (world.hit(r, interval.Interval.init(0.001, std.math.inf(f32)), &rec)) {
-            const direction = rec.normal.add(vec3.Vec3.random_unit_vector());
-            return ray_color(&ray.Ray.init(rec.p, direction), depth - 1, world).scalar_mul(0.5);
+            var scattered: ray.Ray = undefined;
+            var attenuation: color.Color = undefined;
+
+            if (rec.mat.scatter(r, &rec, &attenuation, &scattered)) {
+                return attenuation.mul(ray_color(&scattered, depth - 1, world));
+            }
+            return color.Color.init(0, 0, 0);
         }
 
         const unit_direction = r.direction.unit_vector();
