@@ -28,7 +28,7 @@ pub fn main() !void {
     };
 
     var material_left = material.Dialectric{
-        .refraction_index = 1.5,
+        .refraction_index = 1.50,
     };
 
     var material_right = material.Metal.init(

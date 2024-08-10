@@ -24,7 +24,7 @@ pub const Sphere = struct {
     pub fn init(center: vec3.Point3, radius: f32, mat: material.Material) Sphere {
         return .{
             .center = center,
-            .radius = radius,
+            .radius = @max(0, radius),
             .mat = mat,
         };
     }
