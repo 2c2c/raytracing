@@ -104,3 +104,38 @@ pub const Metal = struct {
         return (scattered.direction.dot(hit_record.normal) > 0.0);
     }
 };
+
+pub const Dialectric = struct {
+    // albedo: color.Color,
+    refraction_index: f32,
+
+    const vtable = Material.VTable{
+        .scatter = &scatter,
+    };
+
+    pub fn _material(dialectric: *Dialectric) Material {
+        return Material{
+            .ctx = @ptrCast(dialectric),
+            .vtable = &vtable,
+        };
+    }
+
+    pub fn scatter(
+        ctx: *anyopaque,
+        r_in: *const ray.Ray,
+        hit_record: *const hittable.HitRecord,
+        attenuation: *color.Color,
+        scattered: *ray.Ray,
+    ) bool {
+        const self: *Dialectric = @alignCast(@ptrCast(ctx));
+        attenuation.* = color.Color.init(1, 1, 1);
+        const ri = if (hit_record.front_face) 1.0 / self.refraction_index else self.refraction_index;
+
+        const unit_direction = r_in.direction.unit_vector();
+        const refracted = vec3.Vec3.refract(unit_direction, hit_record.normal, ri);
+
+        scattered.* = ray.Ray.init(hit_record.p, refracted);
+
+        return true;
+    }
+};

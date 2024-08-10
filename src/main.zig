@@ -27,10 +27,9 @@ pub fn main() !void {
         .albedo = color.Color.init(0.1, 0.2, 0.5),
     };
 
-    var material_left = material.Metal.init(
-        color.Color.init(0.8, 0.8, 0.8),
-        0.3,
-    );
+    var material_left = material.Dialectric{
+        .refraction_index = 1.5,
+    };
 
     var material_right = material.Metal.init(
         color.Color.init(0.8, 0.6, 0.2),
