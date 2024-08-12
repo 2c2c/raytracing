@@ -17,12 +17,24 @@ pub const Camera = struct {
     samples_per_pixel: u32 = 10,
     pixel_samples_scale: f32 = 1.0,
     max_depth: u32 = 10,
+    vfov: f32 = 90,
+    lookfrom: vec3.Point3 = vec3.Point3.init(0, 0, 0),
+    lookat: vec3.Point3 = vec3.Point3.init(0, 0, -1),
+    vup: vec3.Vec3 = vec3.Vec3.init(0, 1, 0),
+
+    defocus_angle: f32 = 0,
+    focus_dist: f32 = 10,
 
     img_height: u32 = undefined,
     center: vec3.Point3 = undefined,
     pixel_00_loc: vec3.Point3 = undefined,
     pixel_delta_u: vec3.Vec3 = undefined,
     pixel_delta_v: vec3.Vec3 = undefined,
+    u: vec3.Vec3 = undefined,
+    v: vec3.Vec3 = undefined,
+    w: vec3.Vec3 = undefined,
+    defocus_disc_u: vec3.Vec3 = undefined,
+    defocus_disc_v: vec3.Vec3 = undefined,
 
     pub fn render(self: *Camera, world: *const hittable.Hittable) !void {
         self.init();
@@ -50,20 +62,30 @@ pub const Camera = struct {
 
         self.pixel_samples_scale = 1.0 / @as(f32, @floatFromInt(self.samples_per_pixel));
 
-        self.center = vec3.Point3.init(0, 0, 0);
+        self.center = self.lookfrom;
 
-        const focal_length = 1.0;
-        const viewport_height = 2.0;
+        const theta = rtweekend.degrees_to_radians(self.vfov);
+        const h = @tan(theta / 2.0);
+        const viewport_height = 2 * h * self.focus_dist;
         const viewport_width = viewport_height * @as(f32, @floatFromInt(self.img_width)) / @as(f32, @floatFromInt(self.img_height));
 
-        const viewport_u = vec3.Vec3.init(viewport_width, 0, 0);
-        const viewport_v = vec3.Vec3.init(0, -viewport_height, 0);
+        self.w = self.lookfrom.sub(self.lookat).unit_vector();
+        self.u = self.vup.cross(self.w).unit_vector();
+        self.v = self.w.cross(self.u);
+
+        const viewport_u = self.u.scalar_mul(viewport_width);
+        const viewport_v = self.v.neg().scalar_mul(viewport_height);
 
         self.pixel_delta_u = viewport_u.scalar_div(@as(f32, @floatFromInt(self.img_width)));
         self.pixel_delta_v = viewport_v.scalar_div(@as(f32, @floatFromInt(self.img_height)));
 
-        const viewport_upper_left = self.center.sub(vec3.Vec3.init(0, 0, focal_length)).sub(viewport_u.scalar_div(2)).sub(viewport_v.scalar_div(2));
+        const viewport_upper_left = self.center.sub(self.w.scalar_mul(self.focus_dist)).sub(viewport_u.scalar_div(2)).sub(viewport_v.scalar_div(2));
+
         self.pixel_00_loc = viewport_upper_left.add(self.pixel_delta_u.add(self.pixel_delta_v).scalar_mul(0.5));
+
+        const defocus_radius = self.focus_dist * @tan(rtweekend.degrees_to_radians(self.defocus_angle / 2.0));
+        self.defocus_disc_u = self.u.scalar_mul(defocus_radius);
+        self.defocus_disc_v = self.v.scalar_mul(defocus_radius);
     }
 
     fn ray_color(r: *const ray.Ray, depth: u32, world: *const hittable.Hittable) color.Color {
@@ -98,10 +120,15 @@ pub const Camera = struct {
         const jj = self.pixel_delta_v.scalar_mul((@as(f32, @floatFromInt(j)) + offset.y()));
         const pixel_sample = self.pixel_00_loc.add(ii).add(jj);
 
-        const ray_origin = self.center;
+        const ray_origin = if (self.defocus_angle <= 0) self.center else self.defocus_disk_sample();
         const ray_direction = pixel_sample.sub(ray_origin);
 
         return ray.Ray.init(ray_origin, ray_direction);
+    }
+
+    fn defocus_disk_sample(self: *const Camera) vec3.Point3 {
+        const p = vec3.Vec3.random_in_unit_disc();
+        return self.center.add(self.defocus_disc_u.scalar_mul(p.e[0])).add(self.defocus_disc_v.scalar_mul(p.e[1]));
     }
 
     fn sample_square() vec3.Vec3 {

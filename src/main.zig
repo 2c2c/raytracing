@@ -82,5 +82,13 @@ pub fn main() !void {
     cam.img_width = 400;
     cam.samples_per_pixel = 100;
     cam.max_depth = 50;
+    cam.vfov = 20;
+    cam.lookfrom = vec3.Point3.init(-2, 2, 1);
+    cam.lookat = vec3.Point3.init(0, 0, -1);
+    cam.vup = vec3.Vec3.init(0, 1, 0);
+
+    cam.defocus_angle = 10.0;
+    cam.focus_dist = 3.4;
+
     try cam.render(&world);
 }
