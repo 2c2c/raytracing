@@ -3,22 +3,22 @@ var xoshiro = std.rand.DefaultPrng.init(0);
 const random = xoshiro.random();
 
 pub const Vec3 = struct {
-    e: [3]f32,
+    e: [3]f64,
 
-    pub fn init(e1: f32, e2: f32, e3: f32) Vec3 {
-        const e: [3]f32 = .{ e1, e2, e3 };
+    pub fn init(e1: f64, e2: f64, e3: f64) Vec3 {
+        const e: [3]f64 = .{ e1, e2, e3 };
         return Vec3{ .e = e };
     }
 
-    pub fn x(self: *const Vec3) f32 {
+    pub fn x(self: *const Vec3) f64 {
         return self.e[0];
     }
 
-    pub fn y(self: *const Vec3) f32 {
+    pub fn y(self: *const Vec3) f64 {
         return self.e[1];
     }
 
-    pub fn z(self: *const Vec3) f32 {
+    pub fn z(self: *const Vec3) f64 {
         return self.e[2];
     }
 
@@ -67,15 +67,15 @@ pub const Vec3 = struct {
         return Vec3{ .e = e };
     }
 
-    pub fn len(self: *const Vec3) f32 {
+    pub fn len(self: *const Vec3) f64 {
         return @sqrt(self.len_squared());
     }
 
-    pub fn len_squared(self: *const Vec3) f32 {
+    pub fn len_squared(self: *const Vec3) f64 {
         return self.e[0] * self.e[0] + self.e[1] * self.e[1] + self.e[2] * self.e[2];
     }
 
-    pub fn scalar_add(self: *const Vec3, t: f32) Vec3 {
+    pub fn scalar_add(self: *const Vec3, t: f64) Vec3 {
         const e = .{
             self.e[0] + t,
             self.e[1] + t,
@@ -84,7 +84,7 @@ pub const Vec3 = struct {
         return Vec3{ .e = e };
     }
 
-    pub fn scalar_sub(self: *const Vec3, t: f32) Vec3 {
+    pub fn scalar_sub(self: *const Vec3, t: f64) Vec3 {
         const e = .{
             self.e[0] - t,
             self.e[1] - t,
@@ -93,7 +93,7 @@ pub const Vec3 = struct {
         return Vec3{ .e = e };
     }
 
-    pub fn scalar_mul(self: *const Vec3, t: f32) Vec3 {
+    pub fn scalar_mul(self: *const Vec3, t: f64) Vec3 {
         const e = .{
             self.e[0] * t,
             self.e[1] * t,
@@ -102,7 +102,7 @@ pub const Vec3 = struct {
         return Vec3{ .e = e };
     }
 
-    pub fn scalar_div(self: *const Vec3, t: f32) Vec3 {
+    pub fn scalar_div(self: *const Vec3, t: f64) Vec3 {
         const e = .{
             self.e[0] / t,
             self.e[1] / t,
@@ -111,7 +111,7 @@ pub const Vec3 = struct {
         return Vec3{ .e = e };
     }
 
-    pub fn dot(self: *const Vec3, other: Vec3) f32 {
+    pub fn dot(self: *const Vec3, other: Vec3) f64 {
         return self.e[0] * other.e[0] + self.e[1] * other.e[1] + self.e[2] * other.e[2];
     }
 
@@ -155,7 +155,7 @@ pub const Vec3 = struct {
         return v.sub(norm.scalar_mul(2 * v.dot(norm)));
     }
 
-    pub fn refract(uv: Vec3, n: Vec3, etai_over_etat: f32) Vec3 {
+    pub fn refract(uv: Vec3, n: Vec3, etai_over_etat: f64) Vec3 {
         const cos_theta = @min(n.dot(uv.neg()), 1.0);
         const r_out_perp = n.scalar_mul(cos_theta).add(uv).scalar_mul(etai_over_etat);
         // const r_out_perp = cos_theta.mul(n).add(uv).mul(etai_over_etat);
@@ -165,23 +165,23 @@ pub const Vec3 = struct {
     }
 
     pub fn rand() Vec3 {
-        const rand1 = random.float(f32);
-        const rand2 = random.float(f32);
-        const rand3 = random.float(f32);
+        const rand1 = random.float(f64);
+        const rand2 = random.float(f64);
+        const rand3 = random.float(f64);
 
         return Vec3.init(rand1, rand2, rand3);
     }
 
-    pub fn rand_range(min: f32, max: f32) Vec3 {
-        const rand1 = min + random.float(f32) * (max - min);
-        const rand2 = min + random.float(f32) * (max - min);
-        const rand3 = min + random.float(f32) * (max - min);
+    pub fn rand_range(min: f64, max: f64) Vec3 {
+        const rand1 = min + random.float(f64) * (max - min);
+        const rand2 = min + random.float(f64) * (max - min);
+        const rand3 = min + random.float(f64) * (max - min);
 
         return Vec3.init(rand1, rand2, rand3);
     }
 
     pub fn near_zero(self: *const Vec3) bool {
-        const s = 1e-8;
+        const s = 1e-10;
         return @abs(self.e[0]) < s and @abs(self.e[1]) < s and @abs(self.e[2]) < s;
     }
 };

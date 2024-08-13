@@ -7,7 +7,7 @@ const material = @import("material.zig");
 
 pub const Sphere = struct {
     center: vec3.Point3,
-    radius: f32,
+    radius: f64,
     mat: material.Material,
 
     const vtable = hittable.Hittable.VTable{
@@ -21,7 +21,7 @@ pub const Sphere = struct {
         };
     }
 
-    pub fn init(center: vec3.Point3, radius: f32, mat: material.Material) Sphere {
+    pub fn init(center: vec3.Point3, radius: f64, mat: material.Material) Sphere {
         return .{
             .center = center,
             .radius = @max(0, radius),

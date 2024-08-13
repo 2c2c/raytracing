@@ -4,6 +4,9 @@ const hittable = @import("hittable.zig");
 const color = @import("color.zig");
 const vec3 = @import("vec3.zig");
 
+var xoshiro = std.rand.DefaultPrng.init(0);
+const random = xoshiro.random();
+
 pub const Material = struct {
     ctx: *anyopaque,
     vtable: *const VTable,
@@ -67,9 +70,9 @@ pub const Lambertian = struct {
 
 pub const Metal = struct {
     albedo: color.Color,
-    fuzz: f32,
+    fuzz: f64,
 
-    pub fn init(albedo: color.Color, fuzz: f32) Metal {
+    pub fn init(albedo: color.Color, fuzz: f64) Metal {
         return Metal{
             .albedo = albedo,
             .fuzz = if (fuzz < 1.0) fuzz else 1.0,
@@ -107,7 +110,7 @@ pub const Metal = struct {
 
 pub const Dialectric = struct {
     // albedo: color.Color,
-    refraction_index: f32,
+    refraction_index: f64,
 
     const vtable = Material.VTable{
         .scatter = &scatter,
@@ -132,10 +135,25 @@ pub const Dialectric = struct {
         const ri = if (hit_record.front_face) 1.0 / self.refraction_index else self.refraction_index;
 
         const unit_direction = r_in.direction.unit_vector();
-        const refracted = vec3.Vec3.refract(unit_direction, hit_record.normal, ri);
 
-        scattered.* = ray.Ray.init(hit_record.p, refracted);
+        const cos_theta = @min(unit_direction.neg().dot(hit_record.normal), 1.0);
+        const sin_theta = @sqrt(1.0 - cos_theta * cos_theta);
+        const cannot_refract = ri * sin_theta > 1.0;
 
+        var direction: vec3.Vec3 = undefined;
+        if (cannot_refract or reflectance(cos_theta, ri) > random.float(f64)) {
+            direction = vec3.Vec3.reflect(unit_direction, hit_record.normal);
+        } else {
+            direction = vec3.Vec3.refract(unit_direction, hit_record.normal, ri);
+        }
+
+        scattered.* = ray.Ray.init(hit_record.p, direction);
         return true;
+    }
+
+    pub fn reflectance(cosine: f64, refraction_index: f64) f64 {
+        var r0 = (1 - refraction_index) / (1 + refraction_index);
+        r0 = r0 * r0;
+        return r0 + (1 - r0) * std.math.pow(f64, 1 - cosine, 5);
     }
 };

@@ -8,7 +8,7 @@ pub const HitRecord = struct {
     p: vec3.Point3,
     normal: vec3.Vec3,
     mat: material.Material,
-    t: f32,
+    t: f64,
     front_face: bool,
 
     pub fn set_face_normal(self: *HitRecord, r: ray.Ray, outward_normal: vec3.Vec3) void {
