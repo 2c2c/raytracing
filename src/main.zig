@@ -36,52 +36,44 @@ pub fn main() !void {
     const gs = ground_sphere._hittable();
     try w.add(gs);
 
-    var a: i32 = -1;
-    while (a < 5) : (a += 1) {
-        var b: i32 = -1;
-        while (b < 5) : (b += 1) {
+    var a: i32 = -11;
+    while (a < 11) : (a += 1) {
+        var b: i32 = -11;
+        while (b < 11) : (b += 1) {
             const choose_mat = random.float(f32);
             const center = vec3.Point3.init(@as(f32, @floatFromInt(a)) + 0.9 * random.float(f32), 0.2, @as(f32, @floatFromInt(b)) + 0.9 * random.float(f32));
 
             if ((center.sub(vec3.Point3.init(4, 0.2, 0)).len() > 0.9)) {
-                try stderr.print("{d:.3} {d:.3} {d:.3} choose_mat = {d:.3}\n", .{
-                    center.x(),
-                    center.y(),
-                    center.z(),
-                    choose_mat,
-                });
-
-                if (choose_mat < 1.0) {
-                    const albedo = color.Color.rand();
+                var random_sphere = try alloc.create(sphere.Sphere);
+                if (choose_mat < 0.8) {
                     var lamb_mat = try alloc.create(material.Lambertian);
+
+                    const albedo = color.Color.rand();
                     lamb_mat.* = material.Lambertian{
                         .albedo = albedo,
                     };
                     const mat = try alloc.create(material.Material);
                     mat.* = lamb_mat._material();
-                    var random_sphere = try alloc.create(sphere.Sphere);
                     random_sphere.* = sphere.Sphere{
-                        // .center = vec3.Point3.init(a, b, 0),
-                        .center = vec3.Point3.init(@as(f32, @floatFromInt(a)), @as(f32, @floatFromInt(b)), 0),
+                        .center = center,
                         .radius = 0.2,
                         .mat = mat,
                     };
                     const s = random_sphere._hittable();
                     try w.add(s);
                 } else if (choose_mat < 0.95) {
+                    var metal_mat = try alloc.create(material.Metal);
+
                     const albedo = color.Color.rand_range(0.5, 1.0);
                     const fuzz = random.float(f32) * 0.5;
-                    var metal_mat = try alloc.create(material.Metal);
                     metal_mat.* = material.Metal{
                         .albedo = albedo,
                         .fuzz = fuzz,
                     };
                     const mat = try alloc.create(material.Material);
                     mat.* = metal_mat._material();
-                    var random_sphere = try alloc.create(sphere.Sphere);
                     random_sphere.* = sphere.Sphere{
-                        // .center = vec3.Point3.init(a, b, 0),
-                        .center = vec3.Point3.init(@as(f32, @floatFromInt(a)), @as(f32, @floatFromInt(b)), 0),
+                        .center = center,
                         .radius = 0.2,
                         .mat = mat,
                     };
@@ -89,15 +81,14 @@ pub fn main() !void {
                     try w.add(s);
                 } else {
                     var dialectric_mat = try alloc.create(material.Dialectric);
+
                     dialectric_mat.* = material.Dialectric{
                         .refraction_index = 1.5,
                     };
                     const mat = try alloc.create(material.Material);
                     mat.* = dialectric_mat._material();
-                    var random_sphere = try alloc.create(sphere.Sphere);
                     random_sphere.* = sphere.Sphere{
-                        // .center = vec3.Point3.init(a, b, 0),
-                        .center = vec3.Point3.init(@as(f32, @floatFromInt(a)), @as(f32, @floatFromInt(b)), 0),
+                        .center = center,
                         .radius = 0.2,
                         .mat = mat,
                     };
@@ -169,7 +160,7 @@ pub fn main() !void {
     var cam = camera.Camera{};
     cam.aspect_ratio = 16.0 / 9.0;
     cam.img_width = 1200;
-    cam.samples_per_pixel = 500;
+    cam.samples_per_pixel = 10;
     cam.max_depth = 50;
 
     cam.vfov = 20;
