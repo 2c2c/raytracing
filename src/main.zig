@@ -22,20 +22,6 @@ pub fn main() !void {
     var w = hittable_list.HittableList.empty(alloc);
     const world = w._hittable();
 
-    // var material_ground = material.Lambertian{
-    //     .albedo = color.Color.init(0.5, 0.5, 0.5),
-    // };
-    //
-    // var ground_sphere = try alloc.create(sphere.Sphere);
-    // defer alloc.destroy(ground_sphere);
-    // ground_sphere.* = sphere.Sphere{
-    //     .center = vec3.Point3.init(0, -1000, 0),
-    //     .radius = 1000,
-    //     .mat = material_ground._material(),
-    // };
-    // var gs = ground_sphere._hittable();
-    // try w.add(&gs);
-
     var a: i32 = -1;
     while (a < 1) : (a += 1) {
         var b: i32 = -1;
@@ -95,40 +81,6 @@ pub fn main() !void {
     }
 
     try stderr.print("world size: {}\n", .{w.objects.items.len});
-
-    // var material1 = material.Dialectric{
-    //     .refraction_index = 1.5,
-    // };
-    // var sphere1 = sphere.Sphere{
-    //     .center = vec3.Point3.init(0, 1, 0),
-    //     .radius = 1.0,
-    //     .mat = material1._material(),
-    // };
-    // const s1 = sphere1._hittable();
-    // try w.add(s1);
-
-    // var material2 = material.Lambertian{
-    //     .albedo = color.Color.init(0.4, 0.2, 0.1),
-    // };
-    // var sphere2 = sphere.Sphere{
-    //     .center = vec3.Point3.init(-4, 1, 0),
-    //     .radius = 1.0,
-    //     .mat = material2._material(),
-    // };
-    // const s2 = sphere2._hittable();
-    // try w.add(s2);
-    //
-    // var material3 = material.Metal{
-    //     .albedo = color.Color.init(0.7, 0.6, 0.5),
-    //     .fuzz = 0.5,
-    // };
-    // var sphere3 = sphere.Sphere{
-    //     .center = vec3.Point3.init(4, 1, 0),
-    //     .radius = 1.0,
-    //     .mat = material3._material(),
-    // };
-    // const s3 = sphere3._hittable();
-    // try w.add(s3);
 
     var cam = camera.Camera{};
     cam.aspect_ratio = 16.0 / 9.0;
