@@ -43,12 +43,15 @@ pub fn main() !void {
             const choose_mat = random.float(f32);
             const center = vec3.Point3.init(@as(f32, @floatFromInt(a)) + 0.9 * random.float(f32), 0.2, @as(f32, @floatFromInt(b)) + 0.9 * random.float(f32));
 
-            try stderr.print("center: {}, {}, {}\n", .{ center.x(), center.y(), center.z() });
             if ((center.sub(vec3.Point3.init(4, 0.2, 0)).len() > 0.9)) {
-                var random_sphere = try alloc.create(sphere.Sphere);
                 var mat: material.Material = undefined;
 
-                try stderr.print("choose_mat = {}\n", .{choose_mat});
+                try stderr.print("{d:.3} {d:.3} {d:.3} choose_mat = {d:.3}\n", .{
+                    center.x(),
+                    center.y(),
+                    center.z(),
+                    choose_mat,
+                });
 
                 if (choose_mat < 1.0) {
                     const albedo = color.Color.rand();
@@ -70,57 +73,54 @@ pub fn main() !void {
                     };
                     mat = dialectric_mat._material();
                 }
-                random_sphere.* = sphere.Sphere{
+                var random_sphere = sphere.Sphere{
                     .center = center,
                     .radius = 0.2,
                     .mat = mat,
                 };
-                var s = random_sphere._hittable();
+                const s = random_sphere._hittable();
                 try stderr.print("sphere: {any}\n", .{random_sphere});
-                try w.add(&s);
+                try w.add(s);
             }
         }
     }
 
     try stderr.print("world size: {}\n", .{w.objects.items.len});
 
-    // var material1 = material.Dialectric{
-    //     .refraction_index = 1.5,
-    // };
-    // var sphere1 = try alloc.create(sphere.Sphere);
-    // sphere1.* = sphere.Sphere{
-    //     .center = vec3.Point3.init(0, 1, 0),
-    //     .radius = 1.0,
-    //     .mat = material1._material(),
-    // };
-    // var s1 = sphere1._hittable();
-    // try w.add(&s1);
-    //
-    // var material2 = material.Lambertian{
-    //     .albedo = color.Color.init(0.4, 0.2, 0.1),
-    // };
-    // var sphere2 = try alloc.create(sphere.Sphere);
-    // sphere2.* = sphere.Sphere{
-    //     .center = vec3.Point3.init(-4, 1, 0),
-    //     .radius = 1.0,
-    //     .mat = material2._material(),
-    // };
-    // var s2 = sphere2._hittable();
-    // try w.add(&s2);
-    //
-    // var material3 = material.Metal{
-    //     .albedo = color.Color.init(0.7, 0.6, 0.5),
-    //     .fuzz = 0.5,
-    // };
-    // var sphere3 = try alloc.create(sphere.Sphere);
-    // sphere3.* = sphere.Sphere{
-    //     .center = vec3.Point3.init(4, 1, 0),
-    //     .radius = 1.0,
-    //     .mat = material3._material(),
-    // };
-    // var s3 = sphere3._hittable();
-    // try w.add(&s3);
-    //
+    var material1 = material.Dialectric{
+        .refraction_index = 1.5,
+    };
+    var sphere1 = sphere.Sphere{
+        .center = vec3.Point3.init(0, 1, 0),
+        .radius = 1.0,
+        .mat = material1._material(),
+    };
+    const s1 = sphere1._hittable();
+    try w.add(s1);
+
+    var material2 = material.Lambertian{
+        .albedo = color.Color.init(0.4, 0.2, 0.1),
+    };
+    var sphere2 = sphere.Sphere{
+        .center = vec3.Point3.init(-4, 1, 0),
+        .radius = 1.0,
+        .mat = material2._material(),
+    };
+    const s2 = sphere2._hittable();
+    try w.add(s2);
+
+    var material3 = material.Metal{
+        .albedo = color.Color.init(0.7, 0.6, 0.5),
+        .fuzz = 0.5,
+    };
+    var sphere3 = sphere.Sphere{
+        .center = vec3.Point3.init(4, 1, 0),
+        .radius = 1.0,
+        .mat = material3._material(),
+    };
+    const s3 = sphere3._hittable();
+    try w.add(s3);
+
     var cam = camera.Camera{};
     cam.aspect_ratio = 16.0 / 9.0;
     cam.img_width = 1200;
