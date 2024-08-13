@@ -21,7 +21,7 @@ pub fn write_color(out: std.fs.File.Writer, pixel_color: Color) !void {
     try out.print("{d} {d} {d}\n", .{ ir, ig, ib });
 }
 
-pub fn linear_to_gamma(linear_component: f32) f32 {
+pub fn linear_to_gamma(linear_component: f64) f64 {
     if (linear_component > 0) {
         return @sqrt(linear_component);
     }

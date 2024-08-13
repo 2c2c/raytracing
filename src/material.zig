@@ -67,9 +67,9 @@ pub const Lambertian = struct {
 
 pub const Metal = struct {
     albedo: color.Color,
-    fuzz: f32,
+    fuzz: f64,
 
-    pub fn init(albedo: color.Color, fuzz: f32) Metal {
+    pub fn init(albedo: color.Color, fuzz: f64) Metal {
         return Metal{
             .albedo = albedo,
             .fuzz = if (fuzz < 1.0) fuzz else 1.0,
@@ -107,7 +107,7 @@ pub const Metal = struct {
 
 pub const Dialectric = struct {
     // albedo: color.Color,
-    refraction_index: f32,
+    refraction_index: f64,
 
     const vtable = Material.VTable{
         .scatter = &scatter,

@@ -12,18 +12,18 @@ var xoshiro = std.rand.DefaultPrng.init(0);
 const random = xoshiro.random();
 
 pub const Camera = struct {
-    aspect_ratio: f32 = 1.0,
+    aspect_ratio: f64 = 1.0,
     img_width: u32 = 100,
     samples_per_pixel: u32 = 10,
-    pixel_samples_scale: f32 = 1.0,
+    pixel_samples_scale: f64 = 1.0,
     max_depth: u32 = 10,
-    vfov: f32 = 90,
+    vfov: f64 = 90,
     lookfrom: vec3.Point3 = vec3.Point3.init(0, 0, 0),
     lookat: vec3.Point3 = vec3.Point3.init(0, 0, -1),
     vup: vec3.Vec3 = vec3.Vec3.init(0, 1, 0),
 
-    defocus_angle: f32 = 0,
-    focus_dist: f32 = 10,
+    defocus_angle: f64 = 0,
+    focus_dist: f64 = 10,
 
     img_height: u32 = undefined,
     center: vec3.Point3 = undefined,
@@ -57,17 +57,17 @@ pub const Camera = struct {
     }
 
     fn init(self: *Camera) void {
-        self.img_height = @intFromFloat(@as(f32, @floatFromInt(self.img_width)) / self.aspect_ratio);
+        self.img_height = @intFromFloat(@as(f64, @floatFromInt(self.img_width)) / self.aspect_ratio);
         self.img_height = if (self.img_height < 1) 1 else self.img_height;
 
-        self.pixel_samples_scale = 1.0 / @as(f32, @floatFromInt(self.samples_per_pixel));
+        self.pixel_samples_scale = 1.0 / @as(f64, @floatFromInt(self.samples_per_pixel));
 
         self.center = self.lookfrom;
 
         const theta = rtweekend.degrees_to_radians(self.vfov);
         const h = @tan(theta / 2.0);
         const viewport_height = 2 * h * self.focus_dist;
-        const viewport_width = viewport_height * @as(f32, @floatFromInt(self.img_width)) / @as(f32, @floatFromInt(self.img_height));
+        const viewport_width = viewport_height * @as(f64, @floatFromInt(self.img_width)) / @as(f64, @floatFromInt(self.img_height));
 
         self.w = self.lookfrom.sub(self.lookat).unit_vector();
         self.u = self.vup.cross(self.w).unit_vector();
@@ -76,8 +76,8 @@ pub const Camera = struct {
         const viewport_u = self.u.scalar_mul(viewport_width);
         const viewport_v = self.v.neg().scalar_mul(viewport_height);
 
-        self.pixel_delta_u = viewport_u.scalar_div(@as(f32, @floatFromInt(self.img_width)));
-        self.pixel_delta_v = viewport_v.scalar_div(@as(f32, @floatFromInt(self.img_height)));
+        self.pixel_delta_u = viewport_u.scalar_div(@as(f64, @floatFromInt(self.img_width)));
+        self.pixel_delta_v = viewport_v.scalar_div(@as(f64, @floatFromInt(self.img_height)));
 
         const viewport_upper_left = self.center.sub(self.w.scalar_mul(self.focus_dist)).sub(viewport_u.scalar_div(2)).sub(viewport_v.scalar_div(2));
 
@@ -94,7 +94,7 @@ pub const Camera = struct {
         }
 
         var rec: hittable.HitRecord = undefined;
-        if (world.hit(r, interval.Interval.init(0.001, std.math.inf(f32)), &rec)) {
+        if (world.hit(r, interval.Interval.init(0.001, std.math.inf(f64)), &rec)) {
             var scattered: ray.Ray = undefined;
             var attenuation: color.Color = undefined;
 
@@ -116,8 +116,8 @@ pub const Camera = struct {
     fn get_ray(self: *const Camera, i: u32, j: u32) ray.Ray {
         const offset = sample_square();
 
-        const ii = self.pixel_delta_u.scalar_mul((@as(f32, @floatFromInt(i)) + offset.x()));
-        const jj = self.pixel_delta_v.scalar_mul((@as(f32, @floatFromInt(j)) + offset.y()));
+        const ii = self.pixel_delta_u.scalar_mul((@as(f64, @floatFromInt(i)) + offset.x()));
+        const jj = self.pixel_delta_v.scalar_mul((@as(f64, @floatFromInt(j)) + offset.y()));
         const pixel_sample = self.pixel_00_loc.add(ii).add(jj);
 
         const ray_origin = if (self.defocus_angle <= 0) self.center else self.defocus_disk_sample();
@@ -132,8 +132,8 @@ pub const Camera = struct {
     }
 
     fn sample_square() vec3.Vec3 {
-        const rand1 = random.float(f32);
-        const rand2 = random.float(f32);
+        const rand1 = random.float(f64);
+        const rand2 = random.float(f64);
         return vec3.Vec3.init(rand1 - 0.5, rand2 - 0.5, 0);
     }
 };
