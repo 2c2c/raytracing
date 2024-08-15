@@ -22,12 +22,13 @@ pub fn main() !void {
     var w = hittable_list.HittableList.empty(alloc);
     const world = w._hittable();
 
-    var material_ground = material.Lambertian{
+    var material_ground = try alloc.create(material.Lambertian);
+    material_ground.* = material.Lambertian{
         .albedo = color.Color.init(0.0, 0.5, 0.0),
     };
     const mg = material_ground._material();
     var ground_sphere = try alloc.create(sphere.Sphere);
-    defer alloc.destroy(ground_sphere);
+    // defer alloc.destroy(ground_sphere);
     ground_sphere.* = sphere.Sphere{
         .center = vec3.Point3.init(0, -1000, 0),
         .radius = 1000,
@@ -99,24 +100,9 @@ pub fn main() !void {
             }
         }
     }
-    defer {
-        for (w.objects.items) |item| {
-            const s: *sphere.Sphere = @alignCast(@ptrCast(item.ctx));
-            if (s.mat.vtable == &material.Lambertian.vtable) {
-                const mat: *material.Lambertian = @alignCast(@ptrCast(s.mat.ctx));
-                alloc.destroy(mat);
-            } else if (s.mat.vtable == &material.Metal.vtable) {
-                const mat: *material.Metal = @alignCast(@ptrCast(s.mat.ctx));
-                alloc.destroy(mat);
-            } else if (s.mat.vtable == &material.Dialectric.vtable) {
-                const mat: *material.Dialectric = @alignCast(@ptrCast(s.mat.ctx));
-                alloc.destroy(mat);
-            }
-            // alloc.destroy(s);
-        }
-    }
 
-    var material1 = material.Dialectric{
+    var material1 = try alloc.create(material.Dialectric);
+    material1.* = material.Dialectric{
         .refraction_index = 1.5,
     };
     const m1 = material1._material();
@@ -129,7 +115,8 @@ pub fn main() !void {
     const s1 = sphere1._hittable();
     try w.add(s1);
 
-    var material2 = material.Lambertian{
+    var material2 = try alloc.create(material.Lambertian);
+    material2.* = material.Lambertian{
         .albedo = color.Color.init(0.4, 0.2, 0.1),
     };
     const m2 = material2._material();
@@ -142,7 +129,8 @@ pub fn main() !void {
     const s2 = sphere2._hittable();
     try w.add(s2);
 
-    var material3 = material.Metal{
+    var material3 = try alloc.create(material.Metal);
+    material3.* = material.Metal{
         .albedo = color.Color.init(0.9, 0.9, 0.9),
         .fuzz = 0.1,
     };
@@ -155,6 +143,24 @@ pub fn main() !void {
     };
     const s3 = sphere3._hittable();
     try w.add(s3);
+
+    defer {
+        for (w.objects.items) |item| {
+            const s: *sphere.Sphere = @alignCast(@ptrCast(item.ctx));
+            stderr.print("deleting {}\n", .{s}) catch unreachable;
+            if (s.mat.vtable == &material.Lambertian.vtable) {
+                const mat: *material.Lambertian = @alignCast(@ptrCast(s.mat.ctx));
+                alloc.destroy(mat);
+            } else if (s.mat.vtable == &material.Metal.vtable) {
+                const mat: *material.Metal = @alignCast(@ptrCast(s.mat.ctx));
+                alloc.destroy(mat);
+            } else if (s.mat.vtable == &material.Dialectric.vtable) {
+                const mat: *material.Dialectric = @alignCast(@ptrCast(s.mat.ctx));
+                alloc.destroy(mat);
+            }
+            alloc.destroy(s);
+        }
+    }
 
     try stderr.print("world size: {}\n", .{w.objects.items.len});
 
