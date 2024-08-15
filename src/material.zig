@@ -99,7 +99,7 @@ pub const Metal = struct {
     ) bool {
         const self: *Metal = @alignCast(@ptrCast(ctx));
         var reflected = vec3.Vec3.reflect(r_in.direction, hit_record.normal);
-        reflected = reflected.unit_vector().add(vec3.Vec3.random_unit_vector().scalar_add(self.fuzz));
+        reflected = reflected.unit_vector().add(vec3.Vec3.random_unit_vector().scalar_mul(self.fuzz));
 
         scattered.* = ray.Ray.init(hit_record.p, reflected);
         attenuation.* = self.albedo;
@@ -109,7 +109,6 @@ pub const Metal = struct {
 };
 
 pub const Dialectric = struct {
-    // albedo: color.Color,
     refraction_index: f64,
 
     const vtable = Material.VTable{

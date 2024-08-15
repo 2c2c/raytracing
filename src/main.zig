@@ -36,7 +36,7 @@ pub fn main() !void {
     };
 
     var material_right = material.Metal.init(
-        color.Color.init(0.8, 0.6, 0.2),
+        color.Color.init(0.8, 0.8, 0.8),
         0.0,
     );
 
