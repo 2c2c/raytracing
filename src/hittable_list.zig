@@ -4,10 +4,10 @@ const ray = @import("ray.zig");
 const interval = @import("interval.zig");
 
 pub const HittableList = struct {
-    objects: std.ArrayList(*hittable.Hittable),
+    objects: std.ArrayList(hittable.Hittable),
 
     pub fn empty(alloc: std.mem.Allocator) HittableList {
-        const objects = std.ArrayList(*hittable.Hittable).init(alloc);
+        const objects = std.ArrayList(hittable.Hittable).init(alloc);
         return HittableList{ .objects = objects };
     }
 
@@ -31,7 +31,7 @@ pub const HittableList = struct {
     pub fn deinit(self: HittableList) !void {
         try self.objects.deinit();
     }
-    pub fn add(self: *HittableList, object: *hittable.Hittable) !void {
+    pub fn add(self: *HittableList, object: hittable.Hittable) !void {
         try self.objects.append(object);
     }
 

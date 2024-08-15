@@ -128,6 +128,17 @@ pub const Vec3 = struct {
         return v.scalar_div(v.len());
     }
 
+    pub fn random_in_unit_disc() Vec3 {
+        while (true) {
+            const rand1 = random.float(f64);
+            const rand2 = random.float(f64);
+            const p = Vec3.init(rand1, rand2, 0);
+            if (p.len_squared() < 1) {
+                return p;
+            }
+        }
+    }
+
     pub fn random_in_unit_sphere() Vec3 {
         while (true) {
             const p = Vec3.rand_range(-1.0, 1.0);
@@ -158,7 +169,6 @@ pub const Vec3 = struct {
     pub fn refract(uv: Vec3, n: Vec3, etai_over_etat: f64) Vec3 {
         const cos_theta = @min(n.dot(uv.neg()), 1.0);
         const r_out_perp = n.scalar_mul(cos_theta).add(uv).scalar_mul(etai_over_etat);
-        // const r_out_perp = cos_theta.mul(n).add(uv).mul(etai_over_etat);
         const r_out_parallel = n.scalar_mul(-@sqrt(@abs(1.0 - r_out_perp.len_squared())));
 
         return r_out_perp.add(r_out_parallel);

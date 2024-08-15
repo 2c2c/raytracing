@@ -109,6 +109,7 @@ pub const Metal = struct {
 };
 
 pub const Dialectric = struct {
+    // albedo: color.Color,
     refraction_index: f64,
 
     const vtable = Material.VTable{
