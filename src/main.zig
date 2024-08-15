@@ -31,6 +31,10 @@ pub fn main() !void {
         .refraction_index = 1.50,
     };
 
+    var material_bubble = material.Dialectric{
+        .refraction_index = 1.00 / 1.50,
+    };
+
     var material_right = material.Metal.init(
         color.Color.init(0.8, 0.6, 0.2),
         0.0,
@@ -63,6 +67,15 @@ pub fn main() !void {
     };
     var ls = left_sphere._hittable();
 
+    var bubble_sphere = try alloc.create(sphere.Sphere);
+    defer alloc.destroy(bubble_sphere);
+    bubble_sphere.* = sphere.Sphere{
+        .center = vec3.Point3.init(-1, 0, -1),
+        .radius = 0.4,
+        .mat = material_bubble._material(),
+    };
+    var bs = bubble_sphere._hittable();
+
     var right_sphere = try alloc.create(sphere.Sphere);
     defer alloc.destroy(right_sphere);
     right_sphere.* = sphere.Sphere{
@@ -75,12 +88,13 @@ pub fn main() !void {
     try w.add(&gs);
     try w.add(&cs);
     try w.add(&ls);
+    try w.add(&bs);
     try w.add(&rs);
 
     var cam = camera.Camera{};
     cam.aspect_ratio = 16.0 / 9.0;
     cam.img_width = 400;
     cam.samples_per_pixel = 100;
-    cam.max_depth = 10;
+    cam.max_depth = 50;
     try cam.render(&world);
 }

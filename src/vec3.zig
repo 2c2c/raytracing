@@ -181,7 +181,7 @@ pub const Vec3 = struct {
     }
 
     pub fn near_zero(self: *const Vec3) bool {
-        const s = 1e-8;
+        const s = 1e-10;
         return @abs(self.e[0]) < s and @abs(self.e[1]) < s and @abs(self.e[2]) < s;
     }
 };
