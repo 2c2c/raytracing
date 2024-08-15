@@ -36,10 +36,14 @@ pub fn main() !void {
     const gs = ground_sphere._hittable();
     try w.add(gs);
 
-    var a: i32 = -11;
-    while (a < 11) : (a += 1) {
-        var b: i32 = -11;
-        while (b < 11) : (b += 1) {
+    // var a: i32 = -11;
+    // while (a < 11) : (a += 1) {
+    //     var b: i32 = -11;
+    //     while (b < 11) : (b += 1) {
+    var a: i32 = -1;
+    while (a < 1) : (a += 1) {
+        var b: i32 = -1;
+        while (b < 1) : (b += 1) {
             const choose_mat = random.float(f64);
             const center = vec3.Point3.init(@as(f64, @floatFromInt(a)) + 0.9 * random.float(f64), 0.2, @as(f64, @floatFromInt(b)) + 0.9 * random.float(f64));
 
@@ -98,19 +102,18 @@ pub fn main() !void {
     defer {
         for (w.objects.items) |item| {
             const s: *sphere.Sphere = @alignCast(@ptrCast(item.ctx));
-            const m: *material.Material = @alignCast(@ptrCast(s.mat.ctx));
-            alloc.destroy(m);
-            alloc.destroy(s);
+            if (s.mat.vtable == &material.Lambertian.vtable) {
+                const mat: *material.Lambertian = @alignCast(@ptrCast(s.mat.ctx));
+                alloc.destroy(mat);
+            } else if (s.mat.vtable == &material.Metal.vtable) {
+                const mat: *material.Metal = @alignCast(@ptrCast(s.mat.ctx));
+                alloc.destroy(mat);
+            } else if (s.mat.vtable == &material.Dialectric.vtable) {
+                const mat: *material.Dialectric = @alignCast(@ptrCast(s.mat.ctx));
+                alloc.destroy(mat);
+            }
+            // alloc.destroy(s);
         }
-    }
-    for (w.objects.items) |item| {
-        const s: *sphere.Sphere = @alignCast(@ptrCast(item.ctx));
-        try stderr.print("center {d:.3} {d:.3} {d:.3} radius {}\n", .{
-            s.*.center.x(),
-            s.*.center.y(),
-            s.*.center.z(),
-            s.*.radius,
-        });
     }
 
     var material1 = material.Dialectric{

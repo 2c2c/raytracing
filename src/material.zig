@@ -35,7 +35,7 @@ pub const Material = struct {
 pub const Lambertian = struct {
     albedo: color.Color,
 
-    const vtable = Material.VTable{
+    pub const vtable = Material.VTable{
         .scatter = &scatter,
     };
 
@@ -79,7 +79,7 @@ pub const Metal = struct {
         };
     }
 
-    const vtable = Material.VTable{
+    pub const vtable = Material.VTable{
         .scatter = &scatter,
     };
 
@@ -109,10 +109,9 @@ pub const Metal = struct {
 };
 
 pub const Dialectric = struct {
-    // albedo: color.Color,
     refraction_index: f64,
 
-    const vtable = Material.VTable{
+    pub const vtable = Material.VTable{
         .scatter = &scatter,
     };
 
