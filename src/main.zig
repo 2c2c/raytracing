@@ -24,7 +24,7 @@ pub fn main() !void {
 
     var material_ground = try alloc.create(material.Lambertian);
     material_ground.* = material.Lambertian{
-        .albedo = color.Color.init(0.0, 0.5, 0.0),
+        .albedo = color.Color.init(0.6, 0.6, 0.6),
     };
     const mg = material_ground._material();
     var ground_sphere = try alloc.create(sphere.Sphere);
@@ -113,7 +113,7 @@ pub fn main() !void {
 
     var material2 = try alloc.create(material.Lambertian);
     material2.* = material.Lambertian{
-        .albedo = color.Color.init(0.4, 0.2, 0.1),
+        .albedo = color.Color.init(0.2, 0.7, 0.7),
     };
     const m2 = material2._material();
     var sphere2 = try alloc.create(sphere.Sphere);
@@ -127,8 +127,8 @@ pub fn main() !void {
 
     var material3 = try alloc.create(material.Metal);
     material3.* = material.Metal{
-        .albedo = color.Color.init(0.2, 0.9, 0.9),
-        .fuzz = 0.0,
+        .albedo = color.Color.init(0.8, 0.8, 0.7),
+        .fuzz = 0.02,
     };
     const m3 = material3._material();
     var sphere3 = try alloc.create(sphere.Sphere);
