@@ -37,14 +37,10 @@ pub fn main() !void {
     const gs = ground_sphere._hittable();
     try w.add(gs);
 
-    // var a: i32 = -11;
-    // while (a < 11) : (a += 1) {
-    //     var b: i32 = -11;
-    //     while (b < 11) : (b += 1) {
-    var a: i32 = -1;
-    while (a < 1) : (a += 1) {
-        var b: i32 = -1;
-        while (b < 1) : (b += 1) {
+    var a: i32 = -11;
+    while (a < 11) : (a += 1) {
+        var b: i32 = -11;
+        while (b < 11) : (b += 1) {
             const choose_mat = random.float(f64);
             const center = vec3.Point3.init(@as(f64, @floatFromInt(a)) + 0.9 * random.float(f64), 0.2, @as(f64, @floatFromInt(b)) + 0.9 * random.float(f64));
 
@@ -131,8 +127,8 @@ pub fn main() !void {
 
     var material3 = try alloc.create(material.Metal);
     material3.* = material.Metal{
-        .albedo = color.Color.init(0.9, 0.9, 0.9),
-        .fuzz = 0.1,
+        .albedo = color.Color.init(0.2, 0.9, 0.9),
+        .fuzz = 0.0,
     };
     const m3 = material3._material();
     var sphere3 = try alloc.create(sphere.Sphere);
@@ -167,7 +163,7 @@ pub fn main() !void {
     var cam = camera.Camera{};
     cam.aspect_ratio = 16.0 / 9.0;
     cam.img_width = 1200;
-    cam.samples_per_pixel = 50;
+    cam.samples_per_pixel = 500;
     cam.max_depth = 50;
 
     cam.vfov = 20;
